@@ -38,18 +38,18 @@ app.use(cors());
 
 app.use(express.json());
 
+// gets the data from cars table
 app.get('/cars', async function(req, res) {
   try {
-  // Query the car table where deleted_flag is 0
+  
   const result = await req.db.query('SELECT * FROM car_data.cars WHERE deleted_flag = 0');
 
-  // Send the data to the front end
   res.json({ success: true, message: 'Cars data retrieved', data: result[0] });
 } catch (err) {
   console.error(err);
   res.status(500).json({ success: false, message: 'Internal Server Error' });
 }
-});
+}); 
 
 app.use(async function(req, res, next) {
   try {
@@ -62,12 +62,13 @@ app.use(async function(req, res, next) {
   }
 });
 
+// Creates a new car in db
 app.post('/cars', async function(req, res) {
   try {
-    const { make, model, year } = req.body;
+    const { id, make, model, year } = req.body;
   
     const query = await req.db.query(
-      `INSERT INTO car (id, make, model, year) 
+      `INSERT INTO cars (id, make, model, year) 
        VALUES (:id, :make, :model, :year)`,
       {
         id,
@@ -83,6 +84,7 @@ app.post('/cars', async function(req, res) {
   }
 });
 
+// deletes car from db
 app.delete('/cars/:id', async function(req,res) {
   try {
     const carId = req.params.id;
@@ -103,12 +105,12 @@ app.delete('/cars/:id', async function(req,res) {
   }
 });
 
+ // Updates a specific car in db
 app.put('/cars/:id', async function(req,res) {
   try {
     const { make, model, year } = req.body;
     const carId = req.params.id; // Extract car ID from the URL parameters
 
-    // Update the 'cars' table
     const query = await req.db.query(
       `UPDATE cars 
        SET make = :make, model = :model, year = :year
